@@ -59,3 +59,38 @@ Also noticed: the model listed older model names as examples, so its built-in kn
 9 Breakfast question: honestly said it cannot know
 10 Pathri population with "say I don't know" instruction: said I don't know, but my prompt told it to, so this is not a clean test
 What I learned: this model resisted hallucination here, but it still cannot know my private documents, which is why I am building RAG. Confident wording is not the same as verified facts.
+
+# Day 3 Notes: Embeddings and semantic search
+
+## What I built
+
+day3.py turns 10 sentences into embeddings with the model all-MiniLM-L6-v2 and finds the closest sentences to a question using cosine similarity. day3_tfidf.py does the same with plain keyword matching (TF-IDF).
+
+## Results
+
+Each sentence became 384 numbers (shape 10 by 384). The model runs on my computer, so no API is needed.
+
+Question: How do lenders decide who gets a loan?
+Embeddings: top result was "Banks check your repayment history before lending money" (0.536), then the loan approval sentence (0.432)
+TF-IDF: only found the sentence with the exact word "loan" (0.41); the repayment-history sentence was missed
+
+Question: What is a good hot drink?
+Embeddings: chai (0.558), then tea (0.321)
+TF-IDF: chai (0.311) because of the word "hot"; tea was missed, and a football sentence outranked it because both contain the common word "is"
+
+Question: Weather today
+Embeddings: rain (0.522), then monsoon (0.304)
+TF-IDF: rain (0.401) because of the word "today"; monsoon scored 0.0
+
+## Things I noticed
+
+- Embeddings match meaning. TF-IDF matches exact words.
+- Equal scores of 0.0 are ties, so their order means nothing.
+- Embedding search always returns a top 3, even if the third result is a poor match (Python sentence, 0.096). So my RAG evaluation must check that the right passage is actually in the results.
+- Keyword and embedding search can be combined (hybrid search). I may try this in the improvement step.
+
+## Summary
+
+- An embedding is a list of numbers (384 in this model) that represents the meaning of a sentence.
+- Cosine similarity is a score for how close two embeddings are. A higher score means a more similar meaning.
+- This matters for RAG because the assistant has to find the passages that match the meaning of a question, even when the words are different.
